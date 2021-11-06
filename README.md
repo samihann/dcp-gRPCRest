@@ -4,7 +4,11 @@
 ## Name: Samihan Nandedkar
 ### UIN: 667140409
 
-Please find below the video explaining the execution and deployment for project:
+Please find below the videos explaining the execution and deployment for project: 
+* Playlist: https://www.youtube.com/playlist?list=PL6Gal4pdluK8sch6WLhl4cyncXAO9rzYu
+
+* Complete Video: https://youtu.be/CpEKnC8Hmzo
+
 
 ### Running the project.
 
@@ -35,7 +39,7 @@ sbt clean run
 
 If your local system is a M1 Macbook, some errors might arise while compilation of the project due to ScalaPB project. 
 Example of error can be seen in the image below. 
-![img.png](img.png)
+![img.png](docs/images/15.png)
 
 This is due to the support for M1 ARM based chips are not added to ScalaPB yet. 
 
@@ -45,7 +49,7 @@ To resolve the issue please follow the steps given below.
 brew install protobuf
 ```
 * After installation, please uncomment the following line in [build.sbt](build.sbt)
-![img_1.png](img_1.png) 
+![img_1.png](docs/images/16.png) 
 * The project should compile successfully now.
 
 Reference: https://github.com/scalapb/ScalaPB/issues/1024
@@ -59,7 +63,7 @@ This project can be divided into 4 major parts.
 3. Invoking the Lambda Function through API Gateway using POST/GET method.
 4. Create a client-server model to trigger the AWS Lambda function though gRPC framework.
 
-![img_3.png](docs/14.png)
+![img_3.png](docs/images/14.png)
 
 The above diagram shows all the parts and how they interact with each other. 
 ## Part 1: LogFileGenerator in EC2 Instance. 
@@ -74,7 +78,7 @@ to messages a single log file. And the updated log file should be placed in S3 b
 forked repository mentioned above. 
 
 
-![img.png](docs/img.png)
+![img.png](docs/images/img.png)
 
 
 * The files will be updated to a single file named `LogFileGenerator.log`, and each log message will have datetime stamp in the following format. 
@@ -84,7 +88,7 @@ forked repository mentioned above.
 ### Create EC2 Instance & setup environment
 * Generated a EC2 instance with Amazon Linux image and installed all the required packages in the instance. 
 
-![img_1.png](docs/img_1.png)
+![img_1.png](docs/images/img_1.png)
 
 * Set up the LogFileGenerator project in the instance to be run using sbt.
 * Create and attach a IAM role to EC2 instance to provide S3 access. 
@@ -93,16 +97,18 @@ forked repository mentioned above.
 * All the terminal commands required to run the application are put in a shell script.
 * At the designated time, the cron will execute the shell script and run the application. 
 
-![img_2.png](docs/img_2.png)
+![img_2.png](docs/images/img_2.png)
 
 * Please refer file to see the shell script. 
 * AWS CLI is used to copy the updated log file to S3 bucket where the lambda function can access it. 
 * Please refer below to see the crontab entry.
 
-![img_3.png](docs/img_3.png)
+![img_3.png](docs/images/img_3.png)
 
 * At 23:55 each day, the [uploadscript.sh](/docs/uploadscript.sh) will be executed which will add logs messages to LogGenerator.log file.
 
+* As it can be seen from the cron logs, the file is being executed every day
+![img_2.png](docs/images/17.png)
 ## Part 2: AWS Lambda
 
 ### Code
@@ -119,13 +125,13 @@ The code is using binary search to locate the given time in the log file making 
 
 * To trigger the Lambda function, it is connected with API Gateway with GET and POST method defined. 
 
-![img_4.png](docs/img_4.png)
+![img_4.png](docs/images/img_4.png)
 
 * Whenever a GET/POST request is made to the created API gateway, Lambda function will be triggered taking the query parameters/payload as input.
 * The POST request can also be made through Postman as it can seen below with payload in following format. 
-![img_1.png](docs/12.png)
+![img_1.png](docs/images/12.png)
 * Similarly, the GET request can also be made by passing the values through query parameters. 
-![img_2.png](docs/13.png)
+![img_2.png](docs/images/13.png)
 ## Part 3: POST/GET Request Client. 
 
 Package: _com.samihann.rest_
@@ -141,7 +147,7 @@ Packages used to make calls: Apache HTTP
 sbt clean compile run
 ```
 * Please run `SearchRestClient`, which will provide user with option to make POST/GET request. 
-![img_5.png](docs/img_5.png)
+![img_5.png](docs/images/img_5.png)
 * Please select the required option to start the simulation adn see the output. 
 
 ### Output
@@ -153,11 +159,11 @@ Run the project using below given command and select option 3 to execute `Search
   ``` 
 
 #### Post Request
-![img.png](docs/1.png)
+![img.png](docs/images/1.png)
 The Post request is made to the AWS Lambda function with the following payload to receive the response with the pattern present. 
 
 #### Get Request 
-![img_1.png](docs/2.png)
+![img_1.png](docs/images/2.png)
 The Get request is made to AWS Lambda function with by passing values through query parameters. 
 
 ## Part 4: gRPC Client/Server
@@ -166,10 +172,10 @@ Package: com.samihann.rest
 
 * `LogSearch.proto` file located in /src/main/protobuf contains the structure for a protobuf to be used for gRPC request. 
 [LogSearch.proto](/src/main/protobuf/LogSearch.proto)
-![img_2.png](docs/3.png)
+![img_2.png](docs/images/3.png)
 * ScalaPB package will use the .proto file to create the stubs which can be used to create gRPC Client/Server and facilitate the interaction between them. 
 Files will be created in /target/scala***/src_managed/main/scalapb/<package-name>/
-![img_3.png](docs/4.png)
+![img_3.png](docs/images/4.png)
 
 * Using these files, Server and Client is created to be run locally. 
 * Server will receive the RPC call from client will make a GET request to lambda function and return the response to client. 
@@ -186,7 +192,7 @@ Please run the project by running below given command in the root directory.
 #### Server
 
 The server will start running on localhost and will be listening on port 8980.
-![img_4.png](docs/5.png)
+![img_4.png](docs/images/5.png)
 
 The server will call `SearchGrpcService`, which had the function(Search) which is being requested to be executed through RPC.
  * The Server will receive request in `SearchRequest` class format and will revert ann instance of `SearchResponse`
@@ -196,7 +202,7 @@ The server will call `SearchGrpcService`, which had the function(Search) which i
 
 The server will send a RPC request to running server and wait for respose.
 
-![img_5.png](docs/6.png)
+![img_5.png](docs/images/6.png)
 
 As the Client function is using a **blocking stub** the function will wait till it receives response from server and then terminate. 
 
@@ -211,7 +217,7 @@ As the Client function is using a **blocking stub** the function will wait till 
   sbt clean compile test
   ``` 
 
-![img.png](docs/11.png)
+![img.png](docs/images/11.png)
 
 
 ### References
