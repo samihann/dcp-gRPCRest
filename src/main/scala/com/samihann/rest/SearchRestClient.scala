@@ -46,7 +46,7 @@ object SearchRestClient extends App {
 
     try {
       while (!stop) {
-        println("Choose one of the following:")
+        println("Choose one of the following and press enter:")
         println(" 1 - POST Request")
         println(" 2 - GET Request")
         println(" q - Quit")

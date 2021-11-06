@@ -9,7 +9,17 @@ Compile / PB.targets := Seq(
   scalapb.gen() -> (Compile / sourceManaged).value / "scalapb"
 )
 
+
+/***
+ * Please uncomment the below line if the project is being run on M1 Macbooks.
+ *
+ * 1. Install protobuf package in the mac by executing following command
+ *        brew install protobuf
+ * 2. Un-comment the below given line. The project should compile without any errors.
+ */
 //PB.protocExecutable := file("/opt/homebrew/Cellar/protobuf/3.17.3/bin/protoc")
+
+
 
 libraryDependencies ++= Seq(
   "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,

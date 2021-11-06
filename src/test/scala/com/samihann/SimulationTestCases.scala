@@ -10,7 +10,7 @@ import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.util.EntityUtils
 import com.samihann.Utility.SearchClass
 
-object SimulationTestCases extends AnyFunSuite {
+class SimulationTestCases extends AnyFunSuite {
 
   test("Test if the gRPC Request class is being initiated. (SearchRequest)") {
     val request1 = new SearchRequest("0:0:0.000","2021-11-04","1","aaa")

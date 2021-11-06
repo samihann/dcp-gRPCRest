@@ -8,6 +8,50 @@ Please find below the video explaining the execution and deployment for project:
 
 ### Running the project.
 
+Steps to run the project.
+1. Clone the repository in your local system. 
+2. Download and install all the required prerequisites,
+   1. Java Development Kit
+   2. sbt
+3. Navigate the repository's root directory in terminal/command prompt. 
+4. Run the following command to install all the required packages mentioned in build.sbt.
+```
+sbt clean compile
+```
+5. Once compiled please execute following command to start the execution of project.
+```
+sbt clean run
+```
+6. The project contains two implementations. 
+   1. Rest: 
+      * To run the rest implementations, please choose option to execute `SearchRestClient`
+      * Then enter the required option of running the POST request or GET request and press enter. 
+   2. gRPC:
+      * To run the gRPC implementation, first choose option to execute `SearchGrpcServer` to start the server.
+      * Open another terminal, run the same command and choose option to start the execution `SearchGrpcClient` to start the execution of client. 
+
+---
+**Note**
+
+If your local system is a M1 Macbook, some errors might arise while compilation of the project due to ScalaPB project. 
+Example of error can be seen in the image below. 
+![img.png](img.png)
+
+This is due to the support for M1 ARM based chips are not added to ScalaPB yet. 
+
+To resolve the issue please follow the steps given below. 
+* Install protobuf package using Homebrew. Please run the following command. 
+```
+brew install protobuf
+```
+* After installation, please uncomment the following line in [build.sbt](build.sbt)
+![img_1.png](img_1.png) 
+* The project should compile successfully now.
+
+Reference: https://github.com/scalapb/ScalaPB/issues/1024
+
+---
+
 ### Project Structure
 This project can be divided into 4 major parts. 
 1. Setup LogFileGenerator in a EC2 instance and update the log files in S3 bucket periodically.
@@ -15,6 +59,9 @@ This project can be divided into 4 major parts.
 3. Invoking the Lambda Function through API Gateway using POST/GET method.
 4. Create a client-server model to trigger the AWS Lambda function though gRPC framework.
 
+![img_3.png](docs/14.png)
+
+The above diagram shows all the parts and how they interact with each other. 
 ## Part 1: LogFileGenerator in EC2 Instance. 
 
 ### Updating LogFileGenerator code
@@ -54,17 +101,19 @@ forked repository mentioned above.
 
 ![img_3.png](docs/img_3.png)
 
-* At 23:55 each day, the uploadscript.sh will be executed which will add logs messages to LogGenerator.log file.
+* At 23:55 each day, the [uploadscript.sh](/docs/uploadscript.sh) will be executed which will add logs messages to LogGenerator.log file.
 
 ## Part 2: AWS Lambda
 
 ### Code
 
+File: [LambdaFunction.py](/docs/LambdaFunction.py)
+
 * The program is written in Python. 
 * It is taking time, deltaTime & pattern as input and returns if the pattern is present in the time frame.
 * The response will be returned with appropriate status code. 
 
-The code is binary search to through the log file making the time complexity of code as O(log(n))
+The code is using binary search to locate the given time in the log file making the time complexity of code as O(log(n))
 
 ## API Gateway
 
@@ -73,12 +122,15 @@ The code is binary search to through the log file making the time complexity of 
 ![img_4.png](docs/img_4.png)
 
 * Whenever a GET/POST request is made to the created API gateway, Lambda function will be triggered taking the query parameters/payload as input.
-
+* The POST request can also be made through Postman as it can seen below with payload in following format. 
+![img_1.png](docs/12.png)
+* Similarly, the GET request can also be made by passing the values through query parameters. 
+![img_2.png](docs/13.png)
 ## Part 3: POST/GET Request Client. 
 
 Package: _com.samihann.rest_
 
-Packages used to make calls: Apache HTTP, Scala.io.Source
+Packages used to make calls: Apache HTTP
 
 * `SearchRestClient` contains the client function to make POST and GET request to lambda function.
 
@@ -94,158 +146,59 @@ sbt clean compile run
 
 ### Output
 
+Run the project using below given command and select option 3 to execute `SearchRestClient`.
 
+  ```
+  sbt clean compile run
+  ``` 
+
+#### Post Request
+![img.png](docs/1.png)
+The Post request is made to the AWS Lambda function with the following payload to receive the response with the pattern present. 
+
+#### Get Request 
+![img_1.png](docs/2.png)
+The Get request is made to AWS Lambda function with by passing values through query parameters. 
 
 ## Part 4: gRPC Client/Server
 
+Package: com.samihann.rest
 
-### Compile and Create Jar
-The project can be compiled to create jar using the following procedure.
-* Through Command Line
-  * Clone the following repository in your system.
-  * On command line please navigate to the following repository. And run the following commands to compile and run the code. 
+* `LogSearch.proto` file located in /src/main/protobuf contains the structure for a protobuf to be used for gRPC request. 
+[LogSearch.proto](/src/main/protobuf/LogSearch.proto)
+![img_2.png](docs/3.png)
+* ScalaPB package will use the .proto file to create the stubs which can be used to create gRPC Client/Server and facilitate the interaction between them. 
+Files will be created in /target/scala***/src_managed/main/scalapb/<package-name>/
+![img_3.png](docs/4.png)
+
+* Using these files, Server and Client is created to be run locally. 
+* Server will receive the RPC call from client will make a GET request to lambda function and return the response to client. 
+
+### Output
+Please run the project by running below given command in the root directory. 
+
   ```
-  sbt clean compile test
-    ``` 
-    ```
-  sbt assembly
-    ```
-A .jar file should be created in /target/scala-3.01/project name.jar
-  
-### Project Structure
-#### Driver
-`DriverClass` contains the configuration of all the MapReduce jobs to be executed. This class is called whenever the 
-jar is executed in hadoop.
+  sbt clean compile run
+  ``` 
+    
+**Please start the execution of `SearchGrpcServer` first and then open another terminal and run the `SearchGrpcClient`.**
 
-#### Mappers
-Package: com.samihann.mappers
+#### Server
 
-This package contains all the mappers required for all the jobs: 
-`JobOneMapper`, `JobTwoMapper`, `JobTwoMapper`, `JobThreeMapper`.
+The server will start running on localhost and will be listening on port 8980.
+![img_4.png](docs/5.png)
 
-#### Reducers
-Package: com.samihann.reducers
-
-This package contains all the reducers required for all the jobs:
-`JobOneReducers`, `JobTwoReducers`, `JobTwoReducers`, `JobThreeReducers`
-
-#### Utility
-Package: com.samihann.Utility
-
-#### Configuration
-
-The configuration.conf file contains the parameters which are used in the code.
-
-This package contains all the utility functions which are reused across the jobs such as parsing task. 
-
-### Hadoop Map Reduce
-![img.png](docs/img.png)
-* Hadoop is a framework that allows us to store and process large data sets in parallel and distributed fashion.
-* There are major two components of a Hadoop framework. 
-  * Storage: HDFS - Distributed file system. (Hadoop Cluster)
-  * MapReduce - Parallel and distributed processing.
-* HDFS: It is the primary data storage system under Hadoop applications.
-  * NameNode:
-    * Receives heartbeat and block report from DataNode
-    * Records metadata
-  * DataNode: 
-    * Stores actual data.
-    * Handles servers read and write request.
-* MapReduce:
-  * Mappers: User designated code which gives a out of Key Value pair. 
-  * Reducers: User designated code which takes input of key and list[Values] pair and give our a key value pair according to logic defined. 
-  
-## Jobs
-
-In this project we have used Hadoop MapReduce to perform the below mentioned tasks. 
-
-1. **Job 1:** 
-* **Compute the distribution of different types of messages across predefined time intervals and injected string instances of the designated regex pattern for these log message types.**
-
-   * Mapper: `JobOneMapper`: [Open](/src/main/scala/com/samihann/mappers/JobOneMapper.scala)
-   * Reducer: `JobOneReducer`: [Open](/src/main/scala/com/samihann/reducers/JobOneReducer.scala)
-   
-Logic:
-
-The Mapper will do the task of parsing through the file to do the following three checks
-* Check if the message lies in the specifies time interval.
-* Check the message type and designate the type as _key_
-* Check if the message contains the given regex patter, if it does give One(IntWritable) in _value_
-
-The reducer will go over all the values for a message type and add the using foldLeft function to iterate through it.
-
-Output:
-
-In the configuration.conf, the start time and end time is mentioned as below.
-![img_1.png](docs/img_1.png)
-
-The mapreduce job is showing the output for the message grouped by their type in this time frame.
-
-![img_3.png](docs/img_3.png)
-
-2. **Job 2:** 
-* **Compute time intervals sorted in the descending order that contained most log messages of the type ERROR with injected regex pattern string instances.**
-* Mapper: `JobTwoMapper`: [Open](/src/main/scala/com/samihann/mappers/JobTwoMapper.scala)
-* Reducer: `JobTwoReducer`: [Open](/src/main/scala/com/samihann/reducers/JobTwoReducer.scala)
-
-Logic: 
-
-The Mapper will do the task of parsing through the file to do the following task
-* On the first iteration it will set start-time as log time and end-time as start-time + 5 mins.
-* Designate the time interval as _key_
-* Check if the message type is ERROR and contains the given regex patter, if it does give One(IntWritable) in _value_
-
-The reducer will go over all the values for a interval and add the using foldLeft function to iterate through it.
-
-Output:
-
-In the configuration.conf, the duration is mentioned as below.
-![img_2.png](docs/img_2.png)
-
-The mapreduce job will show the output for the message grouped by their time interval.
-
-![img_5.png](docs/img_5.png)
+The server will call `SearchGrpcService`, which had the function(Search) which is being requested to be executed through RPC.
+ * The Server will receive request in `SearchRequest` class format and will revert ann instance of `SearchResponse`
 
 
-4. **Job 3:** 
-* **Produce the number of the generated log messages for each message type.**
-* Mapper: `JobThreeMapper`: [Open](/src/main/scala/com/samihann/mappers/JobThreeMapper.scala)
-* Reducer: `JobThreeReducer`: [Open](/src/main/scala/com/samihann/reducers/JobThreeReducer.scala)
+#### Client
 
-Logic:
+The server will send a RPC request to running server and wait for respose.
 
-The Mapper will do the task of parsing through the file to do the following task
-* In the log message check if the message type.
-* Designate the type as _key_
-* Check all the messages of a particular type contains the given regex patter, if it does give One(IntWritable) in _value_
+![img_5.png](docs/6.png)
 
-The reducer will go over all the values for a interval and add the using foldLeft function to iterate through it.
-
-Output:
-
-The mapreduce job will show the output for the message grouped by their type.
-
-![img_6.png](docs/img_6.png)
-
-5. Job 4: 
-* **Produce the highest number of characters in log message for each log message type that contain the detected instances of the designated regex pattern.**
-* Mapper: `JobFourMapper`: [Open](/src/main/scala/com/samihann/mappers/JobFourMapper.scala)
-* Reducer: `JobFourReducer`: [Open](/src/main/scala/com/samihann/reducers/JobFourReducer.scala)
-
-Logic:
-
-The Mapper will do the task of parsing through the file to do the following task
-* In the log message check if the message type.
-* Designate the type as _key_
-* Check all the messages of a particular type contains the given regex patter, if it does count the characters in message and send the count as _value_
-
-The reducer will go over all the values for a interval and find the maximum character count using foldLeft function to iterate through it.
-
-Output:
-
-The mapreduce job will show the output of hight character count for the messages grouped by their type.
-
-![img_7.png](docs/img_7.png)
+As the Client function is using a **blocking stub** the function will wait till it receives response from server and then terminate. 
 
 
 ### Test Cases
@@ -256,9 +209,9 @@ The mapreduce job will show the output of hight character count for the messages
   
   ```
   sbt clean compile test
-    ``` 
+  ``` 
 
-![img_8.png](docs/img_8.png)
+![img.png](docs/11.png)
 
 
 ### References
@@ -266,8 +219,6 @@ The mapreduce job will show the output of hight character count for the messages
 * https://github.com/0x1DOCD00D/LogFileGenerator
 * https://www.cloudera.com/
 * https://aws.amazon.com/education/awseducate/
-* https://hadoop.apache.org/docs/r1.2.1/mapred_tutorial.html
-
 
 
 

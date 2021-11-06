@@ -12,8 +12,6 @@ This file defines the structure of a protobuf for the gRPC request to be done on
 // This defines the package the template files will be created by ScalaPB library.
 package com.samihann.gRpc;
 
-
-
 // Defines the service with the RPC function.
 // The gRPC client function will make a single request to the server and receive a single response back.
 service LogSearch {
