@@ -168,7 +168,9 @@ The Get request is made to AWS Lambda function with by passing values through qu
 
 ## Part 4: gRPC Client/Server
 
-Package: com.samihann.rest
+Package: com.samihann.grpc
+
+Reference: https://github.com/btlines/grpcexample
 
 * `LogSearch.proto` file located in /src/main/protobuf contains the structure for a protobuf to be used for gRPC request. 
 [LogSearch.proto](/src/main/protobuf/LogSearch.proto)
@@ -204,7 +206,7 @@ The server will send a RPC request to running server and wait for respose.
 
 ![img_5.png](docs/images/6.png)
 
-As the Client function is using a **blocking stub** the function will wait till it receives response from server and then terminate. 
+As the Client function is using a **blocking stub**, and the client function will wait till it receives response from server and then terminate. 
 
 
 ### Test Cases
@@ -225,7 +227,15 @@ As the Client function is using a **blocking stub** the function will wait till 
 * https://github.com/0x1DOCD00D/LogFileGenerator
 * https://www.cloudera.com/
 * https://aws.amazon.com/education/awseducate/
-
+* https://docs.aws.amazon.com/codedeploy/latest/userguide/tutorial-lambda-sam.html
+* gRPC Server/Client Setup Reference Repository: https://github.com/btlines/grpcexample
+* https://scalapb.github.io/docs/grpc/
+* https://blog.knoldus.com/grpc-an-introduction-with-scala-compiler/
+* http://www.beyondthelines.net/computing/grpc-in-scala/
+* https://aws.amazon.com/premiumsupport/knowledge-center/ec2-instance-access-s3-bucket/
+* https://knowledgeacademy.io/how-to-access-aws-s3-buckets-from-ec2-instances/
+* https://alvinalexander.com/scala/how-to-send-json-post-data-to-restful-url-in-scala/
+* https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html
 
 
 
