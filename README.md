@@ -1,8 +1,5 @@
-# Distribution Computation Problem (HW-3)
+# Distribution Computation Problem
 ### Description: The goal of this homework is for students to gain experience with solving a distributed computational problem using cloud computing technologies by designing and implementing a RESTful service and a lambda function that are accessed from clients using gRPC.
-( CS441 | Fall 2021 )
-## Name: Samihan Nandedkar
-### UIN: 667140409
 
 Please find below the videos explaining the execution and deployment for project: 
 * Playlist: https://www.youtube.com/playlist?list=PL6Gal4pdluK8sch6WLhl4cyncXAO9rzYu
